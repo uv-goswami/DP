@@ -2,29 +2,30 @@ import itertools
 import string
 import time
 
-def brute_force_attack(target_password, max_length=4):
-    """
-    Simulates a brute-force attack by trying all possible combinations
-    of letters, digits, and symbols up to max_length.
-    """
-    characters = string.ascii_letters + string.digits + string.punctuation
+def simulate_brute_force(target_password):
+    chars = string.ascii_lowercase + string.digits
     attempts = 0
     start_time = time.time()
-
-    for length in range(1, max_length + 1):
-        for guess_tuple in itertools.product(characters, repeat=length):
+    
+    for length in range(1, 9):
+        for guess in itertools.product(chars, repeat=length):
             attempts += 1
-            guess = ''.join(guess_tuple)
-            if guess == target_password:
+            guess_word = "".join(guess)
+            
+            if guess_word == target_password:
                 end_time = time.time()
-                print(f"Password found: {guess}")
-                print(f"Attempts: {attempts}")
-                print(f"Time taken: {end_time - start_time:.2f} seconds")
-                return
-    print("Password not found within given max_length.")
+                return guess_word, attempts, end_time - start_time
+                
+    return None, attempts, 0
 
-# Example usage
-if __name__ == "__main__":
-    password = input("Enter the password to brute-force (for demo, keep it short): ")
-    max_len = int(input("Enter maximum length to try: "))
-    brute_force_attack(password, max_length=max_len)
+target = input("Enter a weak password (max 4 chars for speed): ")
+print(f"Cracking '{target}'...")
+
+cracked_password, count, duration = simulate_brute_force(target)
+
+if cracked_password:
+    print(f"Success! Password is: {cracked_password}")
+    print(f"Total Attempts: {count}")
+    print(f"Time Taken: {duration:.5f} seconds")
+else:
+    print("Failed to crack within limit.")
