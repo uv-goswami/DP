@@ -17,9 +17,10 @@ def generate_passphrase(filename, num_words=4):
 filename = "dictionary.txt"
 try:
     with open(filename, "w") as f:
-        f.write("correct\nhorse\nbattery\nstaple\nblue\nsky\nmountain\nriver\ncoffee\ncode\nsecure\nprivate\n")
+        f.write("data\nprivacy\nlol\nred\nblue\nsky\nmountain\nriver\ncoffee\ncode\nsecure\nprivate\n")
 except:
     pass
 
 password = generate_passphrase(filename)
 print("Generated Passphrase:", password)
+
