@@ -1,49 +1,49 @@
 import hashlib
 import requests
 
-def check_password_pwned(password):
-    """
-    Checks if a password has been leaked using Have I Been Pwned's API.
-    Returns the number of times it was found in breaches (0 if not found).
-    """
-    # Hash the password using SHA-1
-    sha1_hash = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
+def check_password_leak(password):
+    sha1_password = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
+    prefix, suffix = sha1_password[:5], sha1_password[5:]
     
-    # First 5 characters for K-anonymity
-    prefix = sha1_hash[:5]
-    suffix = sha1_hash[5:]
-    
-    # Query the API
     url = f"https://api.pwnedpasswords.com/range/{prefix}"
-    response = requests.get(url)
-    
-    if response.status_code != 200:
-        raise RuntimeError(f"Error fetching data: {response.status_code}")
-    
-    # Check if suffix is in the returned list
-    hashes = (line.split(':') for line in response.text.splitlines())
-    for h, count in hashes:
-        if h == suffix:
-            return int(count)  # Number of times found
-    
-    return 0  # Not found
+    try:
+        response = requests.get(url)
+        if response.status_code != 200:
+            return 0
+            
+        hashes = (line.split(':') for line in response.text.splitlines())
+        for h, count in hashes:
+            if h == suffix:
+                return int(count)
+        return 0
+    except:
+        return 0
 
+filename = "credentials.txt"
+try:
+    with open(filename, "w") as f:
+        f.write("admin,password123\n")
+        f.write("user,SuperSecureP@ss\n")
+        f.write("test,123456\n")
+except:
+    pass
 
-def check_passwords_from_file(filename):
-    """
-    Reads a file with 'username,password' per line and checks each password.
-    """
-    with open(filename, 'r', encoding='utf-8') as file:
+try:
+    with open(filename, "r") as file:
+        print(f"{'USERNAME':<15} | {'PASSWORD':<20} | {'STATUS'}")
+        print("-" * 55)
+        
         for line in file:
-            username, password = line.strip().split(',')
-            count = check_password_pwned(password)
-            if count:
-                print(f"⚠️ Password for user '{username}' has been leaked {count} times.")
-            else:
-                print(f"✅ Password for user '{username}' is safe (not found in breaches).")
-
-
-# Example usage
-if __name__ == "__main__":
-    file_path = "passwords.txt"  # Example file
-    check_passwords_from_file(file_path)
+            parts = line.strip().split(',')
+            if len(parts) >= 2:
+                user = parts[0]
+                pwd = parts[1]
+                
+                count = check_password_leak(pwd)
+                
+                if count > 0:
+                    print(f"{user:<15} | {pwd:<20} | LEAKED ({count} times)")
+                else:
+                    print(f"{user:<15} | {pwd:<20} | SAFE")
+except FileNotFoundError:
+    print("File not found.")
