@@ -1,23 +1,25 @@
-import random
+import secrets
 
-def generate_password_from_dict(dict_file, num_words=4, separator='-'):
-    """
-    Generates a password by randomly selecting words from a dictionary file.
-    """
-    with open(dict_file, 'r', encoding='utf-8') as file:
-        words = [line.strip() for line in file if line.strip()]
-    
-    if len(words) < num_words:
-        raise ValueError("Dictionary file does not have enough words.")
-    
-    chosen_words = random.sample(words, num_words)
-    return separator.join(chosen_words)
+def generate_passphrase(filename, num_words=4):
+    try:
+        with open(filename, 'r') as file:
+            words = [word.strip() for word in file.readlines()]
+            
+        if len(words) < num_words:
+            return "Error: Not enough words in dictionary file."
+            
+        passphrase_words = [secrets.choice(words) for i in range(num_words)]
+        return "-".join(passphrase_words)
+        
+    except FileNotFoundError:
+        return "Error: File not found."
 
+filename = "dictionary.txt"
+try:
+    with open(filename, "w") as f:
+        f.write("correct\nhorse\nbattery\nstaple\nblue\nsky\nmountain\nriver\ncoffee\ncode\nsecure\nprivate\n")
+except:
+    pass
 
-if __name__ == "__main__":
-    dict_path = "05dictionary.txt"  # Path to your dictionary file
-    num = int(input("Enter number of words for password: "))
-    sep = input("Enter separator (default '-'): ") or '-'
-    
-    password = generate_password_from_dict(dict_path, num_words=num, separator=sep)
-    print(f"Generated Password: {password}")
+password = generate_passphrase(filename)
+print("Generated Passphrase:", password)
